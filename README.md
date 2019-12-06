@@ -1,2 +1,3 @@
 # javb92.github.io
-personal webpage
+Personal Webpage made with threejs and bootstrap studio
+Javier Bonilla Mite // javb92
