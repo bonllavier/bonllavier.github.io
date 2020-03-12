@@ -1,0 +1,56 @@
+
+.content_header {
+    margin-bottom: 50px;
+}
+
+.link_profile a {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.link_profile {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: rgb(255,255,255,0.7);
+}
+.link_profile img:hover {
+    filter: contrast(300%);
+    filter: saturate(3);
+}
+
+
+.w-100 {
+	width: 75% !important;
+	margin: auto;
+}
+
+.works_section {
+    background-color: rgba(0, 0, 0, 0.671);
+
+}
+
+.titles_works {
+    color: rgb(255,255,255);
+    font-family: 'Allerta Stencil', sans-serif; 
+    padding-top: 10px; padding-bottom: 10px;
+}
+
+hr{ 
+    height: 2px;
+    color: white;
+    background-color: white;
+    border: none;
+  }
+
+  .carousel_container a {
+      color: white;
+  }
+
+  .carousel_container a:hover {
+    text-shadow: black;
+    font-style: italic;
+}
+
+.carousel-caption {
+    background-color:rgba(0, 0, 0, 0.671);
+}
