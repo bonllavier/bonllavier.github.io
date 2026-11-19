@@ -21,6 +21,10 @@
 			height: 100%;
 		}
 
+		html {
+			background: #171522 radial-gradient(ellipse at 65% 35%, #352b49, #171522 65%, #100f17) fixed;
+		}
+
 		#c {
 			width: 100%;
 			height: 100%;
@@ -28,7 +32,13 @@
 			z-index: -1;
 			position: fixed;
 			top: 0;
-			left: 0
+			left: 0;
+			opacity: 0;
+		}
+		#c.scene-ready { opacity: 1; }
+
+		@media (prefers-reduced-motion: no-preference) {
+			#c { transition: opacity 450ms ease-out; }
 		}
 	</style>
 	<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +61,7 @@
 			<a href="#experience">Experience</a>
 			<a href="#live">Live</a>
 		</nav>
+		<span class="scene-status" role="status" hidden>Loading 3D scene…</span>
 	</header>
 
 	<main id="top">
@@ -362,7 +373,18 @@
 	</footer>
 
 	<script defer src="assets/js/github-activity.js"></script>
-	<script type="module" src="./scripts/3dengine.js"></script>
+	<script type="module">
+		const status = document.querySelector('.scene-status');
+		status.hidden = false;
+		try {
+			const { startScene } = await import('./scripts/3dengine.js');
+			await startScene(document.querySelector('#c'));
+		} catch (error) {
+			console.warn('The 3D background could not load.', error);
+		} finally {
+			status.hidden = true;
+		}
+	</script>
 	<script>
 		document.getElementById('current-year').textContent = new Date().getFullYear();
 	</script>

@@ -1,103 +1,47 @@
 import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
-import {GLTFLoader} from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/GLTFLoader.js';
 
-let camera, scene, renderer;
+export async function startScene(canvas) {
+    const renderer = new THREE.WebGLRenderer({ canvas });
+    const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 20000);
+    camera.position.set(0, 2, 33);
+    camera.rotation.set(0.25, 0, 0);
 
-//HERE WE EXECUTE ALL THAT THE MAIN METHOD HAVE
-main();
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xd2d2d2);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(-1, 2, 4);
+    scene.add(light);
 
-function main() {
+    try {
+        const gltf = await new Promise((resolve, reject) => {
+            new GLTFLoader().load('./gltf/javb92_wepage_threejs.gltf', resolve, undefined, reject);
+        });
+        const model = gltf.scene;
+        scene.add(model);
+        const scrollingSurfaces = model.children.filter(mesh => mesh.name === 'Plane' || mesh.name === 'Cylinder');
 
-	// MAIN METHOD THAT GOING TO INITIATE CAMERA, SCENE AND THE FIRST ROTATING CUBE
-	const canvas = document.querySelector('#c');
-	renderer = new THREE.WebGLRenderer({canvas});
+        function render(timestamp) {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            if (canvas.width !== width || canvas.height !== height) {
+                renderer.setSize(width, height, false);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            }
 
-	const fov = 50;
-	const aspect = 2; // the canvas default
-	const near = 0.1;
-	const far = 20000;
-	camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-	camera.position.set(0, 2, 33);
-	//camera.position.set(-1001.310, 60.035, -644.038);
-	camera.rotation.set(0.25, 0, 0);
+            const rotation = timestamp * 0.00001;
+            light.rotation.y = model.rotation.y = rotation;
+            for (const mesh of scrollingSurfaces) mesh.material.map.offset.set(0, rotation);
 
-	//I DONT KNOW IF THIS IS NECCESARY, DOESNT SEEM TO HAVE ANY IMPACT
-	camera.aspect = canvas.clientWidth / canvas.clientHeight;
-	camera.updateProjectionMatrix();
-	//
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
 
-	scene = new THREE.Scene();
-	const intensity = 1;
-	const color = "0xFFFFFF";
-	const light = new THREE.DirectionalLight(color, intensity);
-	light.position.set(-1, 2, 4);
-	scene.add(light);
-	scene.background = new THREE.Color(0xd2d2d2);
-
-
-	var loader = new GLTFLoader();
-	loader.load('./gltf/javb92_wepage_threejs.gltf', function (gltf) {
-		scene.add(gltf.scene);
-	}, undefined, function (error) {
-		console.error(error);
-	});
-
-	function resizeRendererToDisplaySize(renderer) {
-		const canvas = renderer.domElement;
-		const width = canvas.clientWidth;
-		const height = canvas.clientHeight;
-		const needResize = canvas.width !== width || canvas.height !== height;
-		if (needResize) {
-		  renderer.setSize(width, height, false);
-		}
-		return needResize;
-	}
-	
-	let ver1 = true;
-	//console.log(scene.children);
-	function render(time, time2) {
-		time *= 0.00001; // convert time to seconds
-		time2 *= 0.00001; // convert time to seconds
-		if (resizeRendererToDisplaySize(renderer)) {
-		  const canvas = renderer.domElement;
-		  camera.aspect = canvas.clientWidth / canvas.clientHeight;
-		  camera.updateProjectionMatrix();
-		}
-
-		for (let cont = 0; cont < scene.children.length; cont++) {
-			scene.children[cont].rotation.y = time;
-			if (scene.children[1] && ver1 === true) {
-				if (scene.children[1].children[8].name === "Plane"){
-					console.log(scene.children[1].children[8]);
-				}
-				
-				
-				ver1 = false;
-			}
-			if (scene.children[1]) {
-				for (let x = 0; x < scene.children[1].children.length ; x++ ) {
-					if (scene.children[1].children[x].name === "Plane"){
-						scene.children[1].children[x].material.map.offset.set(0, time);
-					}
-					if (scene.children[1].children[x].name === "Cylinder"){
-						scene.children[1].children[x].material.map.offset.set(0,time);
-					}
-				}
-
-				
-				
-				//scene.children[1].children[8].material.map.wrapT = THREE.RepeatWrapping;
-				//scene.children[1].children[8].material.map.wrapS = THREE.RepeatWrapping;
-				//scene.children[1].children[8].material.map.repeat.set(45, 45);
-
-			}
-			//scene.children[cont].rotation.y = time;
-		}
-		
-		renderer.render(scene, camera);
-
-		requestAnimationFrame(render);
-	}
-
-	requestAnimationFrame(render);
+        render(performance.now());
+        canvas.classList.add('scene-ready');
+    } catch (error) {
+        renderer.dispose();
+        throw error;
+    }
 }

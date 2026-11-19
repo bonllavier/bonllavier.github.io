@@ -101,6 +101,36 @@ main,
     transform: translateX(-50%);
 }
 
+.scene-status {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--paper-muted);
+    font-size: .8125rem;
+}
+
+.scene-status[hidden] { display: none; }
+
+.scene-status::before {
+    content: "";
+    width: .85em;
+    height: .85em;
+    border: 2px solid var(--line-light);
+    border-top-color: var(--violet);
+    border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .scene-status::before { animation: scene-spin 900ms linear infinite; }
+
+    @keyframes scene-spin {
+        to { transform: rotate(1turn); }
+    }
+}
+
 .brand {
     display: flex;
     align-items: center;
