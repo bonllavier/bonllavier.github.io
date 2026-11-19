@@ -1,0 +1,39 @@
+name: Sync public GitHub activity
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/github-activity.yml'
+      - 'scripts/sync-github.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-activity-feed
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read public GitHub activity
+        run: python3 scripts/sync-github.py > "$RUNNER_TEMP/activity.json"
+      - name: Publish activity feed
+        shell: bash
+        run: |
+          set -eu
+          if git ls-remote --exit-code --heads origin github-activity; then
+            git fetch --depth=1 origin refs/heads/github-activity
+            git switch --detach FETCH_HEAD
+          else
+            git switch --orphan github-activity
+          fi
+          cp "$RUNNER_TEMP/activity.json" activity.json
+          git add activity.json
+          git -c user.name=github-actions[bot] -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m "Refresh public activity feed"
+          git push origin HEAD:refs/heads/github-activity
